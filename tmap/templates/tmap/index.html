@@ -11,15 +11,16 @@
     <body>
         <p>Select a keyword and see relative tweets on the map!</p>
         <form>
-            <select name="keyword">
-                <option value="pancake">movie</option>
+            <select name="keyword" id="keyword", onchange="myMap()">
+                <option value="movie">movie</option>
                 <option value="iPhone">iPhone</option>
                 <option value="music">music</option>
-                <option value="internship">spring</option>
-                <option value="EU">hot</option>
-                <option value="Asia">facebook</option>
+                <option value="spring">spring</option>
+                <option value="hot">hot</option>
+                <option value="twitter">twitter</option>
+                <option value=" ">all</option>
             </select> 
-            <input type="submit" value="See" />
+
         </form>
 
         <h3>My Google Maps Demo</h3>
@@ -35,12 +36,10 @@
                     center: myLatlng
                 }
                 var map = new google.maps.Map(document.getElementById("map"), mapOptions);
-
-                var base_string="https://maps.googleapis.com/maps/api/geocode/json?address="
                 var i=0;
 
                 var loc_query;
-                var abc = "https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com/tmsg/_search?q=text:hot&pretty"
+                var abc = "https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com/tmsg/_search?q=text:" + document.getElementById('keyword').value + "&pretty";
                 $.getJSON(abc, function(d2){
                     ct = d2.hits.total;
                     for(var i=0; i<ct; i++){

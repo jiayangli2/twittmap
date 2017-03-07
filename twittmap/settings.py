@@ -25,7 +25,7 @@ SECRET_KEY = 'k+tw(bq*q)&djen0g9yitk%^zo8!_d_p%!w%!23&n_mlywygus'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['tmapulenv.pyrwwgvxjf.us-west-2.elasticbeanstalk.com', '127.0.0.1']
+ALLOWED_HOSTS = ['tmapenv.pyrwwgvxjf.us-west-2.elasticbeanstalk.com', '127.0.0.1']
 
 
 # Application definition
