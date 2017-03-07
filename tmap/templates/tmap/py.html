@@ -1,0 +1,6 @@
+
+<ul id="home_tweets">
+    {% for tweet in tweets.tweets %}
+    <li class="tweettext">{{ tweet.status }}</li>
+    <li class="tweettime">{{ tweet.date }}</li>
+    {% endfor %}

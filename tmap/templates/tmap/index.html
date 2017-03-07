@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            #map {
+                height: 400px;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <p>Select a keyword and see relative tweets on the map!</p>
+        <form>
+            <select name="keyword">
+                <option value="pancake">movie</option>
+                <option value="iPhone">iPhone</option>
+                <option value="music">music</option>
+                <option value="internship">spring</option>
+                <option value="EU">hot</option>
+                <option value="Asia">facebook</option>
+            </select> 
+            <input type="submit" value="See" />
+        </form>
+
+        <h3>My Google Maps Demo</h3>
+        <div id="map"></div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+        <script>
+            function myMap() {
+                var myLatlng = new google.maps.LatLng(-25.363882, 131.044922);
+                var mapOptions={
+                    zoom: 4,
+                    center: myLatlng
+                }
+                var map = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+                var base_string="https://maps.googleapis.com/maps/api/geocode/json?address="
+                var i=0;
+
+                var loc_query;
+                var abc = "https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com/tmsg/_search?q=text:hot&pretty"
+                $.getJSON(abc, function(d2){
+                    ct = d2.hits.total;
+                    for(var i=0; i<ct; i++){
+                        var msg = d2.hits.hits[i]._source.text;
+                        var y2=d2.hits.hits[i]._source.place.bounding_box.coordinates[0][i][0];
+                        var y1=d2.hits.hits[i]._source.place.bounding_box.coordinates[0][i][1];
+                        console.log(y1,y2);
+                        var marker = new google.maps.Marker({
+                            position: new google.maps.LatLng(y1, y2),
+                            map: map,
+                            title: msg
+                        });
+                        marker.setMap(map);
+                    }
+
+                });
+            }
+
+        </script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOd0yLa2PRCmldYBjXYLF5eZXhzaCv8jE&callback=myMap"></script>
+
+    </body>
+</html>
+
