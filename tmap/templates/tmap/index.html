@@ -18,7 +18,7 @@
                 <option value="spring">spring</option>
                 <option value="hot">hot</option>
                 <option value="twitter">twitter</option>
-                <option value=" ">all</option>
+                <option value="a">a</option>
             </select> 
 
         </form>
@@ -38,17 +38,27 @@
                 var map = new google.maps.Map(document.getElementById("map"), mapOptions);
                 var i=0;
 
-                var loc_query;
-                var abc = "https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com/tmsg/_search?q=text:" + document.getElementById('keyword').value + "&pretty";
+                var num_query="https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com/tmsg/_search?q=*";
+                var totalitem;
+                $.ajax({
+                    async: false,
+                    url: num_query,
+                    success: function(d1){
+                        totalitem=d1.hits.total;
+                    }
+                });
+                var abc = "https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com/tmsg/_search?q=text:" + document.getElementById('keyword').value + "&pretty&size=" + totalitem;
+                console.log(totalitem);
                 $.getJSON(abc, function(d2){
                     ct = d2.hits.total;
                     for(var i=0; i<ct; i++){
                         var msg = d2.hits.hits[i]._source.text;
-                        var y2=d2.hits.hits[i]._source.place.bounding_box.coordinates[0][i][0];
-                        var y1=d2.hits.hits[i]._source.place.bounding_box.coordinates[0][i][1];
+                        var y2=d2.hits.hits[i]._source.place.bounding_box.coordinates[0][0][0];
+                        var y1=d2.hits.hits[i]._source.place.bounding_box.coordinates[0][0][1];
                         console.log(y1,y2);
                         var marker = new google.maps.Marker({
                             position: new google.maps.LatLng(y1, y2),
+                            icon: getCircle(d2.hits.hits[i]._score),
                             map: map,
                             title: msg
                         });
@@ -56,6 +66,17 @@
                     }
 
                 });
+            }
+
+            function getCircle(magnitude){
+                return {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: 'red',
+                    fillOpacity: .4,
+                    scale: 6,
+                    strokeColor: 'white',
+                    strokeWeight: .5
+                };
             }
 
         </script>
