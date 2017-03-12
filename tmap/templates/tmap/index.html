@@ -99,7 +99,7 @@
                                 title:msg
                             });
                         }
-                        console.log(resp);
+
                         }, function (err) {
                         console.log("error");
                     });
@@ -180,6 +180,7 @@
                 }
 
                 function refreshgmap(){
+                    markers=[];
                     myMap();
                     loadMarker();
                 }
