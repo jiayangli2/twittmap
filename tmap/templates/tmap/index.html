@@ -11,77 +11,185 @@
     <body>
         <p>Select a keyword and see relative tweets on the map!</p>
         <form>
-            <select name="keyword" id="keyword", onchange="myMap()">
+            <select name="keyword" id="keyword", onchange="refreshgmap()">
                 <option value="movie">movie</option>
-                <option value="iPhone">iPhone</option>
                 <option value="music">music</option>
                 <option value="spring">spring</option>
                 <option value="hot">hot</option>
                 <option value="twitter">twitter</option>
-                <option value="a">a</option>
             </select> 
 
         </form>
 
         <h3>My Google Maps Demo</h3>
         <div id="map"></div>
-
+        <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        {% load static %}
+
+        <script src="{% static "tmap/require.js" %}"></script>
+        <script src="{% static "tmap/elasticsearch.jquery.js" %}"></script>
+
+
 
         <script>
+            var map;
+            var markers=[];
+
             function myMap() {
                 var myLatlng = new google.maps.LatLng(-25.363882, 131.044922);
                 var mapOptions={
-                    zoom: 4,
+                    zoom: 2,
                     center: myLatlng
                 }
-                var map = new google.maps.Map(document.getElementById("map"), mapOptions);
-                var i=0;
 
-                var num_query="https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com/tmsg/_search?q=*";
-                var totalitem;
-                $.ajax({
-                    async: false,
-                    url: num_query,
-                    success: function(d1){
-                        totalitem=d1.hits.total;
-                    }
-                });
-                var abc = "https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com/tmsg/_search?q=text:" + document.getElementById('keyword').value + "&pretty&size=" + totalitem;
-                console.log(totalitem);
-                $.getJSON(abc, function(d2){
-                    ct = d2.hits.total;
-                    for(var i=0; i<ct; i++){
-                        var msg = d2.hits.hits[i]._source.text;
-                        var y2=d2.hits.hits[i]._source.place.bounding_box.coordinates[0][0][0];
-                        var y1=d2.hits.hits[i]._source.place.bounding_box.coordinates[0][0][1];
-                        console.log(y1,y2);
-                        var marker = new google.maps.Marker({
-                            position: new google.maps.LatLng(y1, y2),
-                            icon: getCircle(d2.hits.hits[i]._score),
-                            map: map,
-                            title: msg
-                        });
-                        marker.setMap(map);
-                    }
-
+                map = new google.maps.Map(document.getElementById("map"), mapOptions);
+                map.addListener('click', function(e) {
+                    placeMarkerAndPanTo(e.latLng, map);
                 });
             }
 
-            function getCircle(magnitude){
-                return {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    fillColor: 'red',
-                    fillOpacity: .4,
-                    scale: 6,
-                    strokeColor: 'white',
-                    strokeWeight: .5
-                };
-            }
+            function placeMarkerAndPanTo(latLng, map){
+                var client = new $.es.Client({
+                    hosts: 'https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com'
+                });
 
-        </script>
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOd0yLa2PRCmldYBjXYLF5eZXhzaCv8jE&callback=myMap"></script>
+                client.ping({
+                    requestTimeout: 30000,
+                    }, function (error) {
+                    if (error) {
+                        console.error('elasticsearch cluster is down!');
+                        } else {
+                        console.log('All is well');
+                    }
+                });
 
-    </body>
-</html>
+                var searchParams = {
+                    index: 'tmsg',
+                    size: 10,
+                    body:{
+                        "query":{
+                            "bool":{
+                                "must":{
+                                    "match_all":{}
+                                    },
+                                    "filter":{
+                                        "geo_distance": {
+                                            "distance": "300km",
+                                            "geo_location":{
+                                                "lat": latLng.lat(),
+                                                "lon": latLng.lng()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    };
+
+                    client.search(searchParams).then(function (resp) {
+                        var tth = resp.hits.total;
+                        for(var m=0; m<tth; m++){
+                            var msg = resp.hits.hits[m]._source.text;
+                            var l1 = resp.hits.hits[m]._source.geo_location.lat;
+                            var l2 = resp.hits.hits[m]._source.geo_location.lon;
+                            var marker = new google.maps.Marker({
+                                position: new google.maps.LatLng(l1, l2),
+                                map:map,
+                                title:msg
+                            });
+                        }
+                        console.log(resp);
+                        }, function (err) {
+                        console.log("error");
+                    });
+
+                    map.panTo(latLng);
+                }
+
+                function loadMarker(){
+                    var num_query="https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com/tmsg/_search?q=*";
+                    var totalitem;
+                    $.ajax({
+                        async: false,
+                        url: num_query,
+                        success: function(d1){
+                            totalitem=d1.hits.total;
+                        }
+                    });
+                    var abc = "https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com/tmsg/_search?q=text:" + document.getElementById('keyword').value + "&pretty&size=" + 30;//totalitem;
+                    console.log(totalitem);
+                    console.log(markers.length);
+                    $.getJSON(abc, function(d2){
+                        ct = 30;//d2.hits.total;
+
+                        for(var i=0; i<ct; i++){
+                            if(d2.hits.hits[i]==null){
+                                continue;
+                            }
+                            var msg = d2.hits.hits[i]._source.text;
+                            var k=0;
+                            for (k=0; k<markers.length; k++){
+                                if(markers[k].getTitle()==msg){
+                                    break;
+                                }
+                            }
+
+                            if(k!=markers.length){
+                                continue;
+                            }
+
+                            var y1;
+                            var y2;
+                            if(d2.hits.hits[i]._source.place==null){
+                                y1=getRandomArbitrary(-90,90);
+                                y2=getRandomArbitrary(-180,180);
+                                // continue;
+                                } else {
+                                y2=d2.hits.hits[i]._source.place.bounding_box.coordinates[0][0][0];
+                                y1=d2.hits.hits[i]._source.place.bounding_box.coordinates[0][0][1];
+                            }
+                            console.log(y1,y2);
+                            var marker = new google.maps.Marker({
+                                position: new google.maps.LatLng(y1, y2),
+                                icon: getCircle(d2.hits.hits[i]._score),
+                                map: map,
+                                title: msg
+                            });
+
+                            markers.push(marker);
+                        }
+                    });
+                }
+                loadMarker();
+                setInterval(loadMarker, 5000);
+
+                function getCircle(magnitude){
+                    return {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: 'red',
+                        fillOpacity: .4,
+                        scale: 6,
+                        strokeColor: 'white',
+                        strokeWeight: .5
+                    };
+                }
+
+                function getRandomArbitrary(min, max) {
+                    return Math.random() * (max - min) + min;
+                }
+
+                function refreshgmap(){
+                    myMap();
+                    loadMarker();
+                }
+
+
+
+
+            </script>
+            <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOd0yLa2PRCmldYBjXYLF5eZXhzaCv8jE&callback=myMap"></script>
+
+        </body>
+    </html>
 
