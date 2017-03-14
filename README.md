@@ -4,7 +4,7 @@ http://tmapenv.pyrwwgvxjf.us-west-2.elasticbeanstalk.com/tmap
 
 Select a keyword, and you will see tweets that match the word appearing on the Google Map.
 Each marker on the map represents a tweet.
-If the tweet's geotag is available, then it the position of the marker represents the geo_location of the tweet.
+If the tweet's geotag is available, then it the position of the marker represents the geo location of the tweet.
 Otherwise, the position corresponding to the tweet is generated randomly.
 If you place the mouse on the marker, you can see the text of the tweet.
 
