@@ -16,6 +16,8 @@ To differentiate, the icon of this kind of marker is different from the regular 
 Back-end database:
 We used Elasticsearch on AWS as our backend database. To stream tweets to elasticsearch, we used logstash and you can find the configuration file in the folder logstash-5.2.2.
 
+Note: My groupmate went on vacation and I took charge of all the commit. Please consider equal grades.
+
 Assignment Team Composition
 HW Group 14
 
