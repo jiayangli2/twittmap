@@ -13,6 +13,9 @@ If you click on a point on the map, tweets that are within 300km of the point yo
 However, in order to not mislead users, only tweets that have the "geotag" will appear. If the location of a tweet is randomly generated, the tweet will be excluded in this search.
 To differentiate, the icon of this kind of marker is different from the regular ones for regular search.
 
+Back-end database:
+We used Elasticsearch on AWS as our backend database. To stream tweets to elasticsearch, we used logstash and you can find the configuration file in the folder logstash-5.2.2.
+
 Assignment Team Composition
 HW Group 14
 
