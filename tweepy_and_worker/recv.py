@@ -9,4 +9,10 @@ s.listen(5)
 clientSocket, clientAddr = s.accept()
 
 while True:
-    msg = clientSocket.recv(4096)
+    msg = clientSocket.recv(4096)    
+    start=msg.find('\n  "Message"')
+    start +=16
+    mtemp=msg[start:]
+    end = mtemp.find('",\n')
+    rmsg = mtemp[0:end]
+    print rmsg
