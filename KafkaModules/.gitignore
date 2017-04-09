@@ -1,0 +1,9 @@
+*.pyc
+.idea
+lib
+include
+bin
+share
+tweets
+__pycache__
+*.json
