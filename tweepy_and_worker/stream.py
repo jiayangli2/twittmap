@@ -5,7 +5,7 @@ from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 import boto3
-
+import kafka_producer, kafka_consumer
 
 
 consumer_key='GdeEd2wSLwPE3dFBBX7ZxIvzN'
@@ -19,8 +19,9 @@ class StdOutListener(StreamListener):
         super(StdOutListener, self).__init__()
         self.tweet=[]
         self.count=0
-        self.sqs=boto3.resource('sqs', region_name="us-east-2")
-        self.my_queue = self.sqs.get_queue_by_name(QueueName='twittmap')
+        #self.sqs=boto3.resource('sqs', region_name="us-east-2")
+        #self.my_queue = self.sqs.get_queue_by_name(QueueName='twittmap')
+        self.producer = kafka_producer.kafka_producer()
     def on_data(self, data):
         if data != None:
             temp = json.loads(data)
@@ -28,7 +29,8 @@ class StdOutListener(StreamListener):
             if 'place' in temp and temp['place']!=None and temp['place']['bounding_box']['coordinates'][0][0] != None and temp['lang']=='en':
                 self.count+=1
                 print (1)
-                response=self.my_queue.send_message(MessageBody=data)
+                #response=self.my_queue.send_message(MessageBody=data)
+                self.producer.send(msg=str(data))
             if self.count <= 100:
                 return True
             else:
@@ -42,7 +44,7 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 
 stream = Stream(auth, l)
-stream.filter(track=['hot'])
+stream.filter(track=['spring'])
 
 
 
