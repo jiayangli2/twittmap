@@ -152,7 +152,7 @@
                             }
                             var marker;
                             var mood = d2.hits.hits[i]._source.sentiment;
-                            if(mood=="negative){
+                            if(mood=="negative"){
                                 marker = new google.maps.Marker({
                                 position: new google.maps.LatLng(y1, y2),
                                 icon: getCircle(d2.hits.hits[i]._score),
