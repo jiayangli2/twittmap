@@ -1,7 +1,6 @@
 import boto3
 from watson_developer_cloud import AlchemyLanguageV1
 import json
-import cPickle
 from threading import Thread
 
 def get_msg(i): 
@@ -34,7 +33,6 @@ def get_msg(i):
             MessageStructure='json'
         )
         break
-
 sqs = boto3.client('sqs', region_name='us-east-2')
 client = boto3.client('sns', region_name='us-east-2')
 
@@ -42,4 +40,5 @@ for i in range(5):
     t=Thread(target=get_msg, args=(i, ))
     t.setDaemon(True)
     t.start()
+
 
