@@ -4,8 +4,8 @@ import json
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
-import boto.sqs
-from boto.sqs.message import Message
+import boto3
+
 
 
 consumer_key='GdeEd2wSLwPE3dFBBX7ZxIvzN'
@@ -19,18 +19,17 @@ class StdOutListener(StreamListener):
         super(StdOutListener, self).__init__()
         self.tweet=[]
         self.count=0
-        self.conn=boto.sqs.connect_to_region("us-east-2")
-        self.my_queue = self.conn.get_queue('twittmap')
+        self.sqs=boto3.resource('sqs', region_name="us-east-2")
+        self.my_queue = self.sqs.get_queue_by_name(QueueName='twittmap')
     def on_data(self, data):
         if data != None:
             temp = json.loads(data)
             #print(temp['place'])
-            if temp['place']!=None and temp['place']['bounding_box']['coordinates'][0][0] != None and temp['lang']=='en':
+            if 'place' in temp and temp['place']!=None and temp['place']['bounding_box']['coordinates'][0][0] != None and temp['lang']=='en':
                 self.count+=1
-                m=Message()
-                m.set_body(data)
-                self.my_queue.write(m)
-            if self.count <= 50:
+                print (1)
+                response=self.my_queue.send_message(MessageBody=data)
+            if self.count <= 100:
                 return True
             else:
                 return False
@@ -43,7 +42,7 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 
 stream = Stream(auth, l)
-stream.filter(track=['spring'])
+stream.filter(track=['music'])
 
 
 
