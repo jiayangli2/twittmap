@@ -32,7 +32,7 @@ def get_msg(i):
             Subject='PNNTwitt',
             MessageStructure='json'
         )
-        break
+        continue
 sqs = boto3.client('sqs', region_name='us-east-2')
 client = boto3.client('sns', region_name='us-east-2')
 
