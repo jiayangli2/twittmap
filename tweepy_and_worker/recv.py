@@ -47,8 +47,9 @@ while True:
     mtemp=msg[start:]
     end = mtemp.find('",\n')
     rmsg = mtemp[0 : end]
-    rmsg=rmsg.replace('\\"', '"')
-    doc = json.loads(rmsg)
+    #rmsg=rmsg.replace('\\"', '"')
+    rmsg='"'+rmsg+'"'
+    doc = json.loads(json.loads(rmsg))
     doc['geo_location']['lon']=float(doc['geo_location']['lon'])
     doc['geo_location']['lat']=float(doc['geo_location']['lat'])
     res = es.index(index="tmsg", doc_type='tweet', body=doc)
