@@ -51,7 +51,7 @@
 
             function placeMarkerAndPanTo(latLng, map){
                 var client = new $.es.Client({
-                    hosts: 'https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com'
+                    hosts: 'https://search-twitter-demo-uubcfb66kimawtv5q6pnh4kgxu.us-west-2.es.amazonaws.com'
                 });
 
                 client.ping({
@@ -91,6 +91,7 @@
                         var tth = resp.hits.total;
                         for(var m=0; m<tth; m++){
                             var msg = resp.hits.hits[m]._source.text;
+                            console.log(l1, l2);
                             var l1 = resp.hits.hits[m]._source.geo_location.lat;
                             var l2 = resp.hits.hits[m]._source.geo_location.lon;
                             var marker = new google.maps.Marker({
@@ -108,7 +109,7 @@
                 }
 
                 function loadMarker(){
-                    var num_query="https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com/tmsg/_search?q=*";
+                    var num_query="https://search-twitter-demo-uubcfb66kimawtv5q6pnh4kgxu.us-west-2.es.amazonaws.com/tmsg/_search?q=*";
                     var totalitem;
                     $.ajax({
                         async: false,
@@ -117,7 +118,7 @@
                             totalitem=d1.hits.total;
                         }
                     });
-                    var abc = "https://search-es-twitter-demo-snhzuc3whnp44zlt2nx7iaqeaq.us-west-2.es.amazonaws.com/tmsg/_search?q=text:" + document.getElementById('keyword').value + "&pretty&size=" + 30;//totalitem;
+                    var abc = "https://search-twitter-demo-uubcfb66kimawtv5q6pnh4kgxu.us-west-2.es.amazonaws.com/tmsg/_search?q=text:" + document.getElementById('keyword').value + "&pretty&size=" + 30;//totalitem;
                     console.log(totalitem);
                     console.log(markers.length);
                     $.getJSON(abc, function(d2){
@@ -141,21 +142,42 @@
 
                             var y1;
                             var y2;
-                            if(d2.hits.hits[i]._source.place==null){
+                            if(d2.hits.hits[i]._source.geo_location==null){
                                 y1=getRandomArbitrary(-90,90);
                                 y2=getRandomArbitrary(-180,180);
                                 // continue;
                                 } else {
-                                y2=d2.hits.hits[i]._source.place.bounding_box.coordinates[0][0][0];
-                                y1=d2.hits.hits[i]._source.place.bounding_box.coordinates[0][0][1];
+                                y2=d2.hits.hits[i]._source.geo_location.lon;
+                                y1=d2.hits.hits[i]._source.geo_location.lat;
                             }
-                            console.log(y1,y2);
-                            var marker = new google.maps.Marker({
+                            var marker;
+                            var mood = d2.hits.hits[i]._source.sentiment;
+                            if(mood=="negative){
+                                marker = new google.maps.Marker({
                                 position: new google.maps.LatLng(y1, y2),
                                 icon: getCircle(d2.hits.hits[i]._score),
                                 map: map,
                                 title: msg
-                            });
+                                });
+                            } else if(mood=="positive"){
+                                marker = new google.maps.Marker({
+                                position: new google.maps.LatLng(y1, y2),
+                                icon: getCircle2(d2.hits.hits[i]._score),
+                                map: map,
+                                title: msg
+                                });
+                            } else {
+                        
+                                marker = new google.maps.Marker({
+                                position: new google.maps.LatLng(y1, y2),
+                                icon: getCircle3(d2.hits.hits[i]._score),
+                                map: map,
+                                title: msg
+                                });
+
+                        
+                        
+                            }
 
                             markers.push(marker);
                         }
@@ -168,6 +190,26 @@
                     return {
                         path: google.maps.SymbolPath.CIRCLE,
                         fillColor: 'red',
+                        fillOpacity: .4,
+                        scale: 6,
+                        strokeColor: 'white',
+                        strokeWeight: .5
+                    };
+                }
+                function getCircle2(magnitude){
+                    return {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: 'green',
+                        fillOpacity: .4,
+                        scale: 6,
+                        strokeColor: 'white',
+                        strokeWeight: .5
+                    };
+                }
+                function getCircle3(magnitude){
+                    return {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: 'yellow',
                         fillOpacity: .4,
                         scale: 6,
                         strokeColor: 'white',
